@@ -1,0 +1,63 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2761
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fmodern\fcharset0 Courier;}
+{\colortbl;\red255\green255\blue255;\red202\green202\blue202;}
+{\*\expandedcolortbl;;\cssrgb\c83137\c83137\c83137;}
+\margl1440\margr1440\vieww11520\viewh8400\viewkind0
+\deftab720
+\pard\pardeftab720\partightenfactor0
+
+\f0\fs28 \cf2 \expnd0\expndtw0\kerning0
+\outl0\strokewidth0 \strokec2 import json\
+import requests\
+import xml.etree.ElementTree as ET\
+import xml.dom.minidom\
+\
+# Obtener datos JSON desde la URL\
+url = 'https://0a24rso6p3.execute-api.us-east-1.amazonaws.com/gastos'\
+response = requests.get(url)\
+data = response.json()\
+\
+# Crear el elemento ra\'edz\
+root = ET.Element('Gastos')\
+\
+# Inicializar gastos totales\
+total_expenses = 0\
+\
+# Calcular los gastos totales\
+for item in data:\
+    for key, value in item.items():\
+        if key == 'price':\
+            total_expenses += float(value)\
+\
+# Convertir JSON a XML y agregar porcentajes\
+for item in data:\
+    expense = ET.SubElement(root, 'Gastos')\
+    price = 0\
+    for key, value in item.items():\
+        child = ET.SubElement(expense, key)\
+        child.text = str(value)\
+        if key == 'price':\
+            price = float(value)\
+    \
+    # Calcular porcentaje\
+    percentage = (price / total_expenses) * 100\
+    \
+    # Agregar elemento de porcentaje\
+    percentage_elem = ET.SubElement(expense, 'Porcentaje')\
+    percentage_elem.text = f"\{percentage:.2f\}"\
+\
+# Agregar total de gastos al XML\
+total_expense_elem = ET.SubElement(root, 'Total_Gastos')\
+total_expense_elem.text = str(total_expenses)\
+\
+# Crear una representaci\'f3n en cadena del XML\
+xml_str = ET.tostring(root, encoding='unicode', method='xml')\
+\
+# Imprimir XML con formato\
+xml_pretty_str = xml.dom.minidom.parseString(xml_str).toprettyxml()\
+print(xml_pretty_str)\
+\
+# Opcionalmente, escribir el XML a un archivo\
+with open('output.xml', 'w') as f:\
+    f.write(xml_pretty_str)\
+}
